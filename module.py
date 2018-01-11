@@ -146,3 +146,6 @@ def mae_criterion(in_, target):
 
 def sce_criterion(logits, labels):
     return tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=labels))
+
+def wgan_criterion(in_,target):
+    return tf.reduce_mean((1 - 2*target)*in_)
