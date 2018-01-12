@@ -19,8 +19,11 @@ class cyclegan(object):
         self.output_c_dim = args.output_nc
         self.L1_lambda = args.L1_lambda
         self.dataset_dir = args.dataset_dir
+        self.c_min = args.c_min
+        self.c_max = args.c_max
 
         self.discriminator = discriminator
+
         if args.use_resnet:
             self.generator = generator_resnet
         else:
@@ -124,7 +127,8 @@ class cyclegan(object):
             .minimize(self.d_loss, var_list=self.d_vars)
         self.g_optim = tf.train.AdamOptimizer(self.lr, beta1=args.beta1) \
             .minimize(self.g_loss, var_list=self.g_vars)
-
+        self.clip_discriminator_var_op = [var.assign(tf.clip_by_value(var, self.c_min, self.c_max)) for
+                                         var in self.d_vars]
         init_op = tf.global_variables_initializer()
         self.sess.run(init_op)
         self.writer = tf.summary.FileWriter("./logs", self.sess.graph)
@@ -160,8 +164,8 @@ class cyclegan(object):
                 [fake_A, fake_B] = self.pool([fake_A, fake_B])
 
                 # Update D network
-                _, summary_str = self.sess.run(
-                    [self.d_optim, self.d_sum],
+                _, _, summary_str = self.sess.run(
+                    [self.d_optim, self.clip_discriminator_var_op, self.d_sum],
                     feed_dict={self.real_data: batch_images,
                                self.fake_A_sample: fake_A,
                                self.fake_B_sample: fake_B,

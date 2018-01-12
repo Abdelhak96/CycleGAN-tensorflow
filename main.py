@@ -6,8 +6,8 @@ from model import cyclegan
 
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--dataset_dir', dest='dataset_dir', default='horse2zebra', help='path of the dataset')
-parser.add_argument('--epoch', dest='epoch', type=int, default=200, help='# of epoch')
-parser.add_argument('--epoch_step', dest='epoch_step', type=int, default=100, help='# of epoch to decay lr')
+parser.add_argument('--epoch', dest='epoch', type=int, default=100, help='# of epoch')
+parser.add_argument('--epoch_step', dest='epoch_step', type=int, default=50, help='# of epoch to decay lr')
 parser.add_argument('--batch_size', dest='batch_size', type=int, default=1, help='# images in batch')
 parser.add_argument('--train_size', dest='train_size', type=int, default=1e8, help='# images used to train')
 parser.add_argument('--load_size', dest='load_size', type=int, default=286, help='scale images to this size')
@@ -30,6 +30,8 @@ parser.add_argument('--L1_lambda', dest='L1_lambda', type=float, default=10.0, h
 parser.add_argument('--use_resnet', dest='use_resnet', type=bool, default=True, help='generation network using reidule block')
 parser.add_argument('--use_wgan', dest='use_wgan', type=bool, default=True, help='gan loss defined in Wasserstein')
 parser.add_argument('--max_size', dest='max_size', type=int, default=50, help='max size of image pool, 0 means do not use image pool')
+parser.add_argument('--c_min', dest='c_min', type=float, default=-0.01, help='minimum clipping values')
+parser.add_argument('--c_max', dest='c_max', type=float, default= 0.01, help='maximum clipping values')
 
 args = parser.parse_args()
 
