@@ -131,7 +131,7 @@ class cyclegan(object):
                                          var in self.d_vars]
         init_op = tf.global_variables_initializer()
         self.sess.run(init_op)
-        self.writer = tf.summary.FileWriter("./logs", self.sess.graph)
+        self.writer = tf.summary.FileWriter(args.logs_dir, self.sess.graph)
 
         counter = 1
         start_time = time.time()
