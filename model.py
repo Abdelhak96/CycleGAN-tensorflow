@@ -163,7 +163,7 @@ class cyclegan(object):
                 [fake_A, fake_B] = self.pool([fake_A, fake_B])
 
                 # Update D network
-                for critic in args.n_critic:
+                for critic in range(args.n_critic):
                     _, _, summary_str = self.sess.run(
                         [self.d_optim, self.clip_discriminator_var_op, self.d_sum],
                         feed_dict={self.real_data: batch_images,
