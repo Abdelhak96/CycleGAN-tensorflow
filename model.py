@@ -246,7 +246,7 @@ class cyclegan(object):
         index_path = os.path.join(args.test_dir, '{0}_index.html'.format(args.which_direction))
         index = open(index_path, "w")
         index.write("<html><body><table><tr>")
-        index.write("<th>name</th><th>input</th><th>output</th></tr>")
+        index.write("<th>name</th><th>input</th><th>output</th><th>ground truth</th></tr>")
 
         out_var, in_var = (self.testB, self.test_A) if args.which_direction == 'AtoB' else (
             self.testA, self.test_B)
@@ -259,9 +259,9 @@ class cyclegan(object):
                                       '{0}_{1}'.format(args.which_direction, os.path.basename(sample_file)))
             
             if args.which_direction =="BtoA":
-                ground_path = image_path.replace("testB","testA")
+                ground_path = sample_file.replace("testB","testA")
             else :
-                ground_path = image_path.replace("testA","testB")
+                ground_path = sample_file.replace("testA","testB")
             
             fake_img = self.sess.run(out_var, feed_dict={in_var: sample_image})
             save_images(fake_img, [1, 1], image_path)
