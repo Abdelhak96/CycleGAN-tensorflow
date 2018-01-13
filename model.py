@@ -175,7 +175,7 @@ class cyclegan(object):
                 self.writer.add_summary(summary_str, counter)
                 
                 # Update G network 
-                 _, summary_str = self.sess.run([self.g_optim, self.g_sum],
+                _, summary_str = self.sess.run([self.g_optim, self.g_sum],
                     feed_dict={self.real_data: batch_images, self.lr: lr})
                 self.writer.add_summary(summary_str, counter)
 
