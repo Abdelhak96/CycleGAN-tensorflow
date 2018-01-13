@@ -257,6 +257,12 @@ class cyclegan(object):
             sample_image = np.array(sample_image).astype(np.float32)
             image_path = os.path.join(args.test_dir,
                                       '{0}_{1}'.format(args.which_direction, os.path.basename(sample_file)))
+            
+            if args.which_direction =="BtoA":
+                ground_path = image_path.replace("testB","testA")
+            else :
+                ground_path = image_path.replace("testA","testB")
+            
             fake_img = self.sess.run(out_var, feed_dict={in_var: sample_image})
             save_images(fake_img, [1, 1], image_path)
             index.write("<td>%s</td>" % os.path.basename(image_path))
@@ -264,5 +270,7 @@ class cyclegan(object):
                 '..' + os.path.sep + sample_file)))
             index.write("<td><img src='%s'></td>" % (image_path if os.path.isabs(image_path) else (
                 '..' + os.path.sep + image_path)))
+            index.write("<td><img src='%s'></td>" % (ground_path if os.path.isabs(ground_path) else (
+                '..' + os.path.sep + ground_path)))  
             index.write("</tr>")
         index.close()
