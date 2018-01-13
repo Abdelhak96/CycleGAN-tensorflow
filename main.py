@@ -33,6 +33,7 @@ parser.add_argument('--use_wgan', dest='use_wgan', type=bool, default=True, help
 parser.add_argument('--max_size', dest='max_size', type=int, default=50, help='max size of image pool, 0 means do not use image pool')
 parser.add_argument('--c_min', dest='c_min', type=float, default=-0.01, help='minimum clipping values')
 parser.add_argument('--c_max', dest='c_max', type=float, default= 0.01, help='maximum clipping values')
+parser.add_argument('--n_critic', dest='n_critic', type=int, default= 5, help='Training iterations of the discriminator in the main loop')
 
 args = parser.parse_args()
 

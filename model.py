@@ -156,20 +156,27 @@ class cyclegan(object):
                 batch_images = [load_train_data(batch_file, args.load_size, args.fine_size) for batch_file in batch_files]
                 batch_images = np.array(batch_images).astype(np.float32)
 
-                # Update G network and record fake outputs
-                fake_A, fake_B, _, summary_str = self.sess.run(
-                    [self.fake_A, self.fake_B, self.g_optim, self.g_sum],
-                    feed_dict={self.real_data: batch_images, self.lr: lr})
-                self.writer.add_summary(summary_str, counter)
+                # Record fake outputs
+                fake_A, fake_B = self.sess.run(
+                    [self.fake_A, self.fake_B],
+                    feed_dict={self.real_data: batch_images})
                 [fake_A, fake_B] = self.pool([fake_A, fake_B])
 
                 # Update D network
-                _, _, summary_str = self.sess.run(
-                    [self.d_optim, self.clip_discriminator_var_op, self.d_sum],
-                    feed_dict={self.real_data: batch_images,
-                               self.fake_A_sample: fake_A,
-                               self.fake_B_sample: fake_B,
-                               self.lr: lr})
+                for critic in args.n_critic:
+                    _, _, summary_str = self.sess.run(
+                        [self.d_optim, self.clip_discriminator_var_op, self.d_sum],
+                        feed_dict={self.real_data: batch_images,
+                                self.fake_A_sample: fake_A,
+                                self.fake_B_sample: fake_B,
+                                self.lr: lr})
+                    [fake_A, fake_B] = self.pool([],False)
+
+                self.writer.add_summary(summary_str, counter)
+                
+                # Update G network 
+                 _, summary_str = self.sess.run([self.g_optim, self.g_sum],
+                    feed_dict={self.real_data: batch_images, self.lr: lr})
                 self.writer.add_summary(summary_str, counter)
 
                 counter += 1
