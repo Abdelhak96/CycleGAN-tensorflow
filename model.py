@@ -183,7 +183,7 @@ class cyclegan(object):
                         feed_dict={self.real_data: batch_images,
                                 self.fake_A_sample: fake_A,
                                 self.fake_B_sample: fake_B,
-                                self.eps: eps
+                                self.eps: eps,
                                 self.lr: lr})
                     [fake_A, fake_B] = self.pool([],False)
 
