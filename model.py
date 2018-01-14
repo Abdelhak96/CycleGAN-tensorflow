@@ -18,6 +18,7 @@ class cyclegan(object):
         self.input_c_dim = args.input_nc
         self.output_c_dim = args.output_nc
         self.L1_lambda = args.L1_lambda
+        self.lambda_gr = args.lambda_gr
         self.dataset_dir = args.dataset_dir
         self.c_min = args.c_min
         self.c_max = args.c_max
@@ -83,10 +84,23 @@ class cyclegan(object):
 
         self.db_loss_real = self.criterionGAN(self.DB_real, tf.ones_like(self.DB_real))
         self.db_loss_fake = self.criterionGAN(self.DB_fake_sample, tf.zeros_like(self.DB_fake_sample))
-        self.db_loss = (self.db_loss_real + self.db_loss_fake) / 2
         self.da_loss_real = self.criterionGAN(self.DA_real, tf.ones_like(self.DA_real))
         self.da_loss_fake = self.criterionGAN(self.DA_fake_sample, tf.zeros_like(self.DA_fake_sample))
-        self.da_loss = (self.da_loss_real + self.da_loss_fake) / 2
+        
+        t_vars = tf.trainable_variables()
+        self.d_vars = [var for var in t_vars if 'discriminator' in var.name]
+        self.g_vars = [var for var in t_vars if 'generator' in var.name]
+        # Improved WGAN 
+        self.eps = tf.placeholder(tf.float32,name="eps")
+        self.fake_A_tild = self.eps*self.real_A +(1-self.eps)*self.fake_A_sample
+        self.fake_B_tild = self.eps*self.real_B +(1-self.eps)*self.fake_B_sample
+        self.DA_tild =  self.discriminator(self.real_A, self.options, reuse=True, name="discriminatorA")
+        self.DB_tild =  self.discriminator(self.real_B, self.options, reuse=True, name="discriminatorB")
+        self.d_gradient_a = self.lambda_gr*(tf.norm(tf.gradients(self.DA_tild,self.d_vars))- 1)**2
+        self.d_gradient_b = self.lambda_gr*(tf.norm(tf.gradients(self.DB_tild,self.d_vars))- 1)**2
+                
+        self.da_loss = (self.da_loss_real + self.da_loss_fake + self.d_gradient_a) / 2
+        self.db_loss = (self.db_loss_real + self.db_loss_fake + self.d_gradient_b) / 2
         self.d_loss = self.da_loss + self.db_loss
 
         self.g_loss_a2b_sum = tf.summary.scalar("g_loss_a2b", self.g_loss_a2b)
@@ -100,10 +114,12 @@ class cyclegan(object):
         self.db_loss_fake_sum = tf.summary.scalar("db_loss_fake", self.db_loss_fake)
         self.da_loss_real_sum = tf.summary.scalar("da_loss_real", self.da_loss_real)
         self.da_loss_fake_sum = tf.summary.scalar("da_loss_fake", self.da_loss_fake)
+        self.da_loss_grad_sum = tf.summary.scalar("da_loss_gradient",self.d_gradient_a)
+        self.db_loss_grad_sum = tf.summary.scalar("db_loss_gradient",self.d_gradient_b)
         self.d_sum = tf.summary.merge(
             [self.da_loss_sum, self.da_loss_real_sum, self.da_loss_fake_sum,
              self.db_loss_sum, self.db_loss_real_sum, self.db_loss_fake_sum,
-             self.d_loss_sum]
+             self.d_loss_sum, self.da_loss_grad_sum, self.db_loss_grad_sum]
         )
 
         self.test_A = tf.placeholder(tf.float32,
@@ -115,9 +131,6 @@ class cyclegan(object):
         self.testB = self.generator(self.test_A, self.options, True, name="generatorA2B")
         self.testA = self.generator(self.test_B, self.options, True, name="generatorB2A")
 
-        t_vars = tf.trainable_variables()
-        self.d_vars = [var for var in t_vars if 'discriminator' in var.name]
-        self.g_vars = [var for var in t_vars if 'generator' in var.name]
         for var in t_vars: print(var.name)
 
     def train(self, args):
@@ -164,11 +177,13 @@ class cyclegan(object):
 
                 # Update D network
                 for critic in range(args.n_critic):
-                    _, _, summary_str = self.sess.run(
-                        [self.d_optim, self.clip_discriminator_var_op, self.d_sum],
+                    eps = np.random.rand()
+                    _, summary_str = self.sess.run(
+                        [self.d_optim, self.d_sum],
                         feed_dict={self.real_data: batch_images,
                                 self.fake_A_sample: fake_A,
                                 self.fake_B_sample: fake_B,
+                                self.eps: eps
                                 self.lr: lr})
                     [fake_A, fake_B] = self.pool([],False)
 
