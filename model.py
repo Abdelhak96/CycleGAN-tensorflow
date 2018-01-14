@@ -89,7 +89,7 @@ class cyclegan(object):
         
 
         # Improved WGAN 
-        self.eps = tf.placeholder(tf.float32,name="eps")
+        self.eps = tf.placeholder(tf.float32, shape=(),name="eps")
         self.fake_A_tild = self.eps*self.real_A +(1-self.eps)*self.fake_A_sample
         self.fake_B_tild = self.eps*self.real_B +(1-self.eps)*self.fake_B_sample
         self.DA_tild =  self.discriminator(self.fake_A_tild, self.options, reuse=True, name="discriminatorA")
