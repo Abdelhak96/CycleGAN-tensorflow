@@ -123,8 +123,12 @@ class cyclegan(object):
     def train(self, args):
         """Train cyclegan"""
         self.lr = tf.placeholder(tf.float32, None, name='learning_rate')
-        self.d_optim = tf.train.AdamOptimizer(self.lr, beta1=args.beta1) \
-            .minimize(self.d_loss, var_list=self.d_vars)
+        
+        self.d_optimizer = tf.train.RMSPropOptimizer(self.lr, momentum=args.aplha)
+        self.grad_and_vars_d = self.d_optimizer.compute_gradients(self.d_loss,self.d_vars)
+        self.norm_grad_loss_d = [(tf.clip_by_norm(grad, 1), var) for grad, var in self.grad_and_vars_d]
+        self.d_optim = self.d_optimizer.apply_gradients(self.norm_grad_loss_d)
+
         self.g_optim = tf.train.AdamOptimizer(self.lr, beta1=args.beta1) \
             .minimize(self.g_loss, var_list=self.g_vars)
         self.clip_discriminator_var_op = [var.assign(tf.clip_by_value(var, self.c_min, self.c_max)) for
