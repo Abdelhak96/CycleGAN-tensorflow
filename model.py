@@ -124,7 +124,7 @@ class cyclegan(object):
         """Train cyclegan"""
         self.lr = tf.placeholder(tf.float32, None, name='learning_rate')
         
-        self.d_optimizer = tf.train.RMSPropOptimizer(self.lr, momentum=args.aplha)
+        self.d_optimizer = tf.train.RMSPropOptimizer(self.lr, momentum=args.alpha)
         self.grad_and_vars_d = self.d_optimizer.compute_gradients(self.d_loss,self.d_vars)
         self.norm_grad_loss_d = [(tf.clip_by_norm(grad, 1), var) for grad, var in self.grad_and_vars_d]
         self.d_optim = self.d_optimizer.apply_gradients(self.norm_grad_loss_d)
