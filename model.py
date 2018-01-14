@@ -87,17 +87,20 @@ class cyclegan(object):
         self.da_loss_real = self.criterionGAN(self.DA_real, tf.ones_like(self.DA_real))
         self.da_loss_fake = self.criterionGAN(self.DA_fake_sample, tf.zeros_like(self.DA_fake_sample))
         
-        t_vars = tf.trainable_variables()
-        self.d_vars = [var for var in t_vars if 'discriminator' in var.name]
-        self.g_vars = [var for var in t_vars if 'generator' in var.name]
+
         # Improved WGAN 
         self.eps = tf.placeholder(tf.float32,name="eps")
         self.fake_A_tild = self.eps*self.real_A +(1-self.eps)*self.fake_A_sample
         self.fake_B_tild = self.eps*self.real_B +(1-self.eps)*self.fake_B_sample
-        self.DA_tild =  self.discriminator(self.real_A, self.options, reuse=True, name="discriminatorA")
-        self.DB_tild =  self.discriminator(self.real_B, self.options, reuse=True, name="discriminatorB")
-        self.d_gradient_a = self.lambda_gr*(tf.norm(tf.gradients(self.DA_tild,self.d_vars))- 1)**2
-        self.d_gradient_b = self.lambda_gr*(tf.norm(tf.gradients(self.DB_tild,self.d_vars))- 1)**2
+        self.DA_tild =  self.discriminator(self.fake_A_tild, self.options, reuse=True, name="discriminatorA")
+        self.DB_tild =  self.discriminator(self.fake_B_tild, self.options, reuse=True, name="discriminatorB")
+        
+        t_vars = tf.trainable_variables()
+        self.d_vars = [var for var in t_vars if 'discriminator' in var.name]
+        self.g_vars = [var for var in t_vars if 'generator' in var.name]
+        
+        self.d_gradient_a = self.lambda_gr*(tf.global_norm(tf.gradients(self.DA_tild,self.d_vars))- 1)**2
+        self.d_gradient_b = self.lambda_gr*(tf.global_norm(tf.gradients(self.DB_tild,self.d_vars))- 1)**2
                 
         self.da_loss = (self.da_loss_real + self.da_loss_fake + self.d_gradient_a) / 2
         self.db_loss = (self.db_loss_real + self.db_loss_fake + self.d_gradient_b) / 2
