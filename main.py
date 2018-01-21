@@ -34,7 +34,7 @@ parser.add_argument('--max_size', dest='max_size', type=int, default=50, help='m
 parser.add_argument('--c_min', dest='c_min', type=float, default=-0.01, help='minimum clipping values')
 parser.add_argument('--c_max', dest='c_max', type=float, default= 0.01, help='maximum clipping values')
 parser.add_argument('--n_critic', dest='n_critic', type=int, default= 5, help='Training iterations of the discriminator in the main loop')
-parser.add_argument('--alpha', dest='alpha', type=float, default= 0.9, help='Parameter for the RMSProp optimizer')
+parser.add_argument('--alpha', dest='alpha', type=float, default= 0.1, help='Parameter for the RMSProp optimizer')
 
 args = parser.parse_args()
 
